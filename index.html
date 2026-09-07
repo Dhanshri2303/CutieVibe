@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CutieVibe Store ✨</title>
+    <!-- Firebase JS SDK v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- External CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+    <div class="logo">✨ CutieVibe Store ✨</div>
+    <div class="header-actions">
+        <button class="icon-btn" onclick="openDrawer('wishlistDrawer')" title="Wishlist">💖 <span id="wishlistCount">0</span></button>
+        <button class="icon-btn" onclick="openDrawer('cartDrawer')" title="Cart">🛍️ <span id="cartCount">0</span></button>
+        <div class="auth-nav" id="authNav">
+            <button class="signin-btn" onclick="openAuth('login')">Sign In / Register</button>
+        </div>
+    </div>
+</header>
+
+<div class="alert-banner">Festival Alert: Sabne shopping kar li cutie, aap abhi tak baaki ho? 🚨 Grab your viral fits now!</div>
+
+<!-- Protected Store Content -->
+<div id="storeContent" style="display: none;">
+    
+    <!-- Section: Search & Sort Bar -->
+    <div class="search-filter-bar">
+        <input type="text" id="searchInput" placeholder="Search viral dresses, makeup, fits..." oninput="handleSearch()">
+        <select id="sortSelect" onchange="handleSort()">
+            <option value="default">Sort By: Featured</option>
+            <option value="lowToHigh">Price: Low to High</option>
+            <option value="highToLow">Price: High to Low</option>
+        </select>
+    </div>
+
+    <!-- Section 1: Hero Banner Carousel -->
+    <div class="hero-slider-container">
+        <div class="hero-slider" id="heroSlider">
+            <div class="slide">
+                <div class="slide-content" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
+                    <div>
+                        <span class="slide-badge">FLAT 50% OFF</span>
+                        <h2>Festive Glow Collection ✨</h2>
+                        <p>Slay every celebration with viral fits</p>
+                        <button class="shop-now-btn" onclick="filterProducts('dress')">Shop Trends ➔</button>
+                    </div>
+                </div>
+            </div>
+            <div class="slide">
+                <div class="slide-content" style="background: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);">
+                    <div>
+                        <span class="slide-badge" style="background: #4a90e2;">NEW DROPS 💖</span>
+                        <h2>GenZ Makeup & Beauty 💄</h2>
+                        <p>Viral shades from Nykaa & Myntra</p>
+                        <button class="shop-now-btn" style="background: #4a90e2;" onclick="filterProducts('makeup')">Explore Makeup ➔</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slider-dots">
+            <span class="dot active" onclick="setSlide(0)"></span>
+            <span class="dot" onclick="setSlide(1)"></span>
+        </div>
+    </div>
+
+    <!-- Section 2: Visual Category Circles -->
+    <div class="visual-categories">
+        <div class="cat-circle-item" onclick="filterProducts('all', event)">
+            <div class="cat-circle" style="background: #ffe4e1;">✨</div>
+            <span>All Vibe</span>
+        </div>
+        <div class="cat-circle-item" onclick="filterProducts('dress', event)">
+            <div class="cat-circle" style="background: #fff0f5;">👗</div>
+            <span>Dresses</span>
+        </div>
+        <div class="cat-circle-item" onclick="filterProducts('footwear', event)">
+            <div class="cat-circle" style="background: #e6e6fa;">👠</div>
+            <span>Footwear</span>
+        </div>
+        <div class="cat-circle-item" onclick="filterProducts('makeup', event)">
+            <div class="cat-circle" style="background: #ffe4b5;">💄</div>
+            <span>Makeup</span>
+        </div>
+        <div class="cat-circle-item" onclick="filterProducts('skincare', event)">
+            <div class="cat-circle" style="background: #e0ffff;">✨</div>
+            <span>Skincare</span>
+        </div>
+        <div class="cat-circle-item" onclick="filterProducts('kids', event)">
+            <div class="cat-circle" style="background: #fffacd;">🧸</div>
+            <span>Kids</span>
+        </div>
+    </div>
+
+    <!-- Section 3: Flash Sale Container -->
+    <div class="flash-sale-container">
+        <div class="flash-header">
+            <div class="flash-title">
+                <span class="flash-icon">⚡</span>
+                <div>
+                    <h3>FLASH DEALS</h3>
+                    <p>Limited stock cutie, grab fast!</p>
+                </div>
+            </div>
+            <div class="timer-box">
+                <span>Ends in</span>
+                <div id="flashTimer" class="timer-digits">03 : 00 : 00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Section 5: Shop By Vibe -->
+    <div class="vibe-section">
+        <div class="section-heading" style="padding-left: 0;">
+            <h3>Shop By Vibe ✨</h3>
+            <p>Pick your current aesthetic main character mood</p>
+        </div>
+        <div class="vibe-grid">
+            <div class="vibe-card" style="background: linear-gradient(135deg, #ffdde1, #ee9ca7);" onclick="filterProducts('dress')">
+                <h4>College Fit Vibe 🎒</h4>
+                <span>Explore Aesthetics ➔</span>
+            </div>
+            <div class="vibe-card" style="background: linear-gradient(135deg, #a8edea, #fed6e3);" onclick="filterProducts('skincare')">
+                <h4>Clean Girl Glow ✨</h4>
+                <span>Skincare Must-Haves ➔</span>
+            </div>
+            <div class="vibe-card" style="background: linear-gradient(135deg, #f5f7fa, #c3cfe2);" onclick="filterProducts('homedecor')">
+                <h4>Cozy Room Decor 🏠</h4>
+                <span>Aesthetic Vibe ➔</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="section-heading">
+        <h3>Trending Fits & Drops 🔥</h3>
+        <p>Curated viral items just for you</p>
+    </div>
+    <div class="product-grid" id="productContainer"></div>
+
+    <!-- Section: As Seen On Reels -->
+<div class="reels-section">
+    <div class="section-heading" style="padding-left: 0;">
+        <h3>As Seen On Reels 📱</h3>
+        <p>Trending fits viral on Instagram</p>
+    </div>
+    <div class="reels-grid">
+        <div class="reel-card" style="background-image: url('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=300');" onclick="openReel('https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=600', 'Viral Floral Dress Try-On ✨')">
+            <div class="reel-overlay"><span>▶ 120k Views</span></div>
+        </div>
+        <div class="reel-card" style="background-image: url('https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=300');" onclick="openReel('https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=600', 'College Fit Aesthetic Drop 🎒')">
+            <div class="reel-overlay"><span>▶ 95k Views</span></div>
+        </div>
+        <div class="reel-card" style="background-image: url('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300');" onclick="openReel('https://images.unsplash.com/photo-1483985988355-763728e1935b?w=600', 'Clean Girl Glow Look 💄')">
+            <div class="reel-overlay"><span>▶ 210k Views</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Reel Viewer Modal -->
+<div class="modal-overlay" id="reelModal" style="display: none;">
+    <div class="auth-card" style="max-width: 300px; padding: 15px; text-align: center;">
+        <span class="close-btn" onclick="closeModal('reelModal')">✕</span>
+        <img id="reelPreviewImg" src="" style="width: 100%; height: 350px; object-fit: cover; border-radius: 12px; margin-bottom: 10px;">
+        <h4 id="reelTitle" style="margin: 5px 0; color: #ff1493; font-size: 13px;"></h4>
+        <button class="genz-btn" onclick="closeModal('reelModal'); filterProducts('dress');">SHOP THIS LOOK 🛍️</button>
+    </div>
+</div>
+
+    <!-- Section 6: Customer Reviews -->
+    <div class="reviews-section">
+        <div class="section-heading" style="padding-left: 0;">
+            <h3>Cutie Club Vibes ✨</h3>
+            <p>Real reviews from our besties</p>
+        </div>
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="review-header">
+                    <span class="user-avatar">🌸</span>
+                    <div>
+                        <h5>Ananya K.</h5>
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+                <p>"Obsessed with the Floral GenZ dress! Quality is top notch and delivery was so fast ✨"</p>
+            </div>
+            <div class="review-card">
+                <div class="review-header">
+                    <span class="user-avatar">💅</span>
+                    <div>
+                        <h5>Riya M.</h5>
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                    </div>
+                </div>
+                <p>"Found the best viral makeup shades here! Main character energy for real 💕"</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="faq-section">
+        <div class="section-heading" style="padding-left: 0;">
+            <h3>Frequently Asked Questions ❓</h3>
+        </div>
+        <details class="faq-item">
+            <summary>How fast is the shipping?</summary>
+            <p>All viral fits dispatch within 24 hours & deliver in 3-5 business days!</p>
+        </details>
+        <details class="faq-item">
+            <summary>Are these products authentic?</summary>
+            <p>Yes bestie! All products are 100% genuine sourced directly from verified brands.</p>
+        </details>
+    </div>
+
+    <!-- Newsletter Section -->
+    <div class="newsletter-card">
+        <h3>Join VIP Cutie Club 💌</h3>
+        <p>Get secret discount codes & early access to drops</p>
+        <div class="newsletter-form">
+            <input type="email" placeholder="Enter your email bestie...">
+            <button onclick="showToast('Subscribed to VIP Club! 🎉')">Subscribe</button>
+        </div>
+    </div>
+
+    <!-- Section 7: Aesthetic Footer -->
+    <footer>
+        <div class="footer-content">
+            <h4>CutieVibe Store ✨</h4>
+            <p>Your one-stop destination for viral fits & aesthetic drops.</p>
+            <div class="footer-links">
+                <span>About Us</span> • <span>Privacy Policy</span> • <span>Terms & Conditions</span> • <span>Support</span>
+            </div>
+            <div class="copyright">Made with 💕 for Gen-Z Cuties</div>
+        </div>
+    </footer>
+</div>
+
+<!-- Side Drawer: Wishlist -->
+<div class="drawer" id="wishlistDrawer">
+    <div class="drawer-content">
+        <div class="drawer-header">
+            <h3>Saved Favorites 💖</h3>
+            <span class="close-btn" onclick="closeDrawer('wishlistDrawer')">✕</span>
+        </div>
+        <div id="wishlistItemsList" class="drawer-body">
+            <p class="empty-msg">No saved items yet, bestie! ♡</p>
+        </div>
+    </div>
+</div>
+
+<!-- Side Drawer: Cart -->
+<div class="drawer" id="cartDrawer">
+    <div class="drawer-content">
+        <div class="drawer-header">
+            <h3>Shopping Bag 🛍️</h3>
+            <span class="close-btn" onclick="closeDrawer('cartDrawer')">✕</span>
+        </div>
+        <div id="cartItemsList" class="drawer-body">
+            <p class="empty-msg">Your bag is empty! Add cute fits ✨</p>
+        </div>
+        <div class="drawer-footer">
+            <div class="total-row"><span>Total:</span> <span id="cartTotal">₹0</span></div>
+            <button class="genz-btn" onclick="openModal('checkoutModal')">PROCEED TO CHECKOUT 🛍️</button>
+        </div>
+    </div>
+</div>
+
+<!-- Checkout Modal -->
+<div class="modal-overlay" id="checkoutModal" style="display: none;">
+    <div class="auth-card">
+        <span class="close-btn" onclick="closeModal('checkoutModal')">✕</span>
+        <div class="modal-title">Shipping Address 🚚</div>
+        <form onsubmit="handleCheckout(event)">
+            <div class="form-group"><label>Delivery Address</label><input type="text" id="shipAddr" required placeholder="Flat No, Building, Street"></div>
+            <div class="form-group"><label>Pincode</label><input type="text" id="shipPin" required placeholder="6 digit pincode"></div>
+            <button type="submit" class="genz-btn">PLACE ORDER (COD) ✨</button>
+        </form>
+    </div>
+</div>
+
+<!-- Blur Background Overlay Form -->
+<div class="modal-overlay" id="authModal">
+    <!-- Login Card -->
+    <div class="auth-card" id="loginCard">
+        <span class="close-btn" onclick="closeAuth()">✕</span>
+        <div class="modal-title">Welcome Back, Bestie! ✨</div>
+        <div class="modal-subtitle">Log in to unlock viral fits & cute drops 🛍️</div>
+        
+        <form id="loginForm" onsubmit="handleLogin(event)">
+            <div class="form-group">
+                <label>Unique User ID</label>
+                <input type="text" id="loginUserId" placeholder="e.g. Cutie@123" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="••••••••" required>
+            </div>
+            <div class="error-msg" id="loginError"></div>
+            <button type="submit" class="genz-btn">SLAY & ENTER ✨</button>
+        </form>
+
+        <div class="switch-text">
+            New cutie here? <span class="switch-link" onclick="switchCard('register')">Create Account</span>
+        </div>
+    </div>
+
+    <!-- Register Card -->
+    <div class="auth-card" id="registerCard" style="display: none;">
+        <span class="close-btn" onclick="closeAuth()">✕</span>
+        <div class="modal-title">Join The Vibe 💕</div>
+        <div class="modal-subtitle">Register to shop main character aesthetics ✨</div>
+        
+        <form id="registerForm" onsubmit="handleRegister(event)">
+            <div class="form-group">
+                <label>Full Name</label>
+                <input type="text" id="regName" placeholder="Your aesthetic name" required>
+            </div>
+            <div class="form-group">
+                <label>Phone Number (10 Digits)</label>
+                <input type="tel" id="regPhone" placeholder="10 digit phone no." required>
+            </div>
+            <div class="form-group">
+                <label>Email ID</label>
+                <input type="email" id="regEmail" placeholder="cutie@gmail.com" required>
+            </div>
+            <div class="form-group">
+                <label>User ID (Letter + Num + Special Char)</label>
+                <input type="text" id="regUserId" placeholder="e.g. Cutie@123" required>
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="regPassword" placeholder="••••••••" required>
+            </div>
+            <div class="form-group">
+                <label>Confirm Password</label>
+                <input type="password" id="regCPassword" placeholder="••••••••" required>
+            </div>
+            <div class="error-msg" id="regError"></div>
+            <button type="submit" class="genz-btn">REGISTER BESTIE 💖</button>
+        </form>
+
+        <div class="switch-text">
+            Already registered? <span class="switch-link" onclick="switchCard('login')">Log In</span>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toastMsg">Login successful cutie! 💕</div>
+
+<!-- External JS Script -->
+<script src="script.js"></script>
+</body>
+</html>

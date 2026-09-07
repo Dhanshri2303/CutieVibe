@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CutieVibe - Admin Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+    <!-- PapaParse Library for CSV Parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background-color: #fff0f5; padding: 20px; }
+        .admin-card { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 4px 15px rgba(255,105,180,0.2); }
+        h2 { color: #ff1493; text-align: center; margin-bottom: 20px; }
+        label { font-weight: bold; font-size: 13px; color: #555; display: block; margin-top: 10px; }
+        input, select { width: 100%; padding: 10px; margin: 6px 0 14px; border: 1px solid #ffb6c1; border-radius: 8px; box-sizing: border-box; }
+        button { width: 100%; background: linear-gradient(45deg, #ff69b4, #ff1493); color: white; border: none; padding: 12px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; margin-top: 5px; }
+        .divider { text-align: center; font-weight: bold; color: #ff1493; margin: 20px 0; border-bottom: 1px dashed #ffb6c1; line-height: 0.1em; }
+        .divider span { background:#fff; padding:0 10px; }
+        .bulk-section { background: #fff5f8; padding: 15px; border-radius: 10px; border: 1px dashed #ff69b4; }
+    </style>
+</head>
+<body>
+
+<div class="admin-card">
+    <h2>💖 Add New Trend 💖</h2>
+    
+    <!-- Single Product Upload Form -->
+    <label>Product Title</label>
+    <input type="text" id="title" placeholder="e.g. Maybelline Lipstick / Floral Dress">
+
+    <label>Category</label>
+    <select id="category">
+        <option value="dress">Dresses 👗</option>
+        <option value="footwear">Footwear 👠</option>
+        <option value="makeup">Makeup 💄</option>
+        <option value="skincare">Skincare ✨</option>
+        <option value="haircare">Hair Care 💇‍♀️</option>
+        <option value="homedecor">Home Decor 🏠</option>
+        <option value="girlsneeds">Girls Essentials 💖</option>
+    </select>
+
+    <label>Price</label>
+    <input type="text" id="price" placeholder="e.g. ₹299">
+
+    <label>Platform</label>
+    <select id="platform">
+        <option value="Myntra">Myntra</option>
+        <option value="Meesho">Meesho</option>
+        <option value="Amazon">Amazon</option>
+        <option value="Nykaa">Nykaa</option>
+        <option value="Flipkart">Flipkart</option>
+    </select>
+
+    <label>GenZ Tag</label>
+    <input type="text" id="badge" placeholder="e.g. Must Have 🔥 / Viral Glow ✨">
+
+    <label>Image URL</label>
+    <input type="text" id="image" placeholder="Paste image link here">
+
+    <label>Direct Product / Affiliate Link</label>
+    <input type="text" id="link" placeholder="Paste direct product buying URL">
+
+    <button onclick="uploadProduct()">Upload Single Product ✨</button>
+
+    <div class="divider"><span>OR</span></div>
+
+    <!-- Bulk CSV Upload Section -->
+    <div class="bulk-section">
+        <h3>🚀 Bulk Upload via Dataset (CSV)</h3>
+        <label>Select CSV File</label>
+        <input type="file" id="csvFile" accept=".csv">
+        <button onclick="uploadCSV()" style="background: linear-gradient(45deg, #8a2be2, #ff1493);">Upload All Products ✨</button>
+    </div>
+</div>
+
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDGs7J7zNMVip5JiT09vdwq3qqEHEppeYM",
+    authDomain: "cutievibe-5bf88.firebaseapp.com",
+    databaseURL: "https://cutievibe-5bf88-default-rtdb.firebaseio.com",
+    projectId: "cutievibe-5bf88",
+    storageBucket: "cutievibe-5bf88.firebasestorage.app",
+    messagingSenderId: "467711401786",
+    appId: "1:467711401786:web:72f23c0d09ae5aacb1fa03",
+    measurementId: "G-4CBKSGFCPG"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Single Product Upload Function
+  function uploadProduct() {
+      const title = document.getElementById('title').value;
+      const category = document.getElementById('category').value;
+      const price = document.getElementById('price').value;
+      const platform = document.getElementById('platform').value;
+      const badge = document.getElementById('badge').value;
+      const image = document.getElementById('image').value;
+      const link = document.getElementById('link').value;
+
+      if(!title || !price || !image || !link) {
+          alert("Kripya saari details bharein! ✨");
+          return;
+      }
+
+      db.ref('products/').push({
+          title: title,
+          category: category,
+          price: price,
+          platform: platform,
+          badge: badge,
+          image: image,
+          link: link,
+          timestamp: Date.now()
+      }).then(() => {
+          alert("🎉 Product Live Ho Gaya!");
+          location.reload();
+      }).catch(err => alert("Error: " + err.message));
+  }
+
+  // Bulk CSV Upload Function
+  function uploadCSV() {
+      const fileInput = document.getElementById('csvFile');
+      const file = fileInput.files[0];
+
+      if (!file) {
+          alert("Kripya pehle CSV file select karein!");
+          return;
+      }
+
+      Papa.parse(file, {
+          header: true,
+          skipEmptyLines: true,
+          complete: function(results) {
+              const products = results.data;
+              let count = 0;
+
+              products.forEach(item => {
+                  if (item.title && item.category && item.price && item.image && item.link) {
+                      db.ref('products/').push({
+                          title: item.title.trim(),
+                          category: item.category.trim().toLowerCase(),
+                          price: item.price.trim(),
+                          platform: item.platform ? item.platform.trim() : 'Myntra',
+                          badge: item.badge ? item.badge.trim() : 'Trending 🔥',
+                          image: item.image.trim(),
+                          link: item.link.trim(),
+                          timestamp: Date.now()
+                      });
+                      count++;
+                  }
+              });
+
+              alert(`🎉 Success! ${count} products ek sath upload ho gaye!`);
+              location.reload();
+          },
+          error: function(err) {
+              alert("CSV File parse karne me error aaya: " + err.message);
+          }
+      });
+  }
+</script>
+</body>
+</html>
