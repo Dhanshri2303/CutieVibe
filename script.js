@@ -9,7 +9,7 @@ const firebaseConfig = {
   measurementId: "G-4CBKSGFCPG"
 };
 
-// Initialize Firebase
+// Initialize Firebase safely
 if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
 }
@@ -55,16 +55,19 @@ async function fetchProducts() {
         if (!response.ok) throw new Error("products.json load failed");
         const rawData = await response.json();
         
-        allProducts = rawData.map(item => ({
-            title: item.name ? (item.brand ? `${item.brand} - ${item.name}` : item.name) : 'Cute Product',
-            price: `₹${item.sellPrice || item.mrp || 299}`,
-            image: item.image && item.image !== "https://via.placeholder.com/200" 
-                    ? item.image 
-                    : 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500',
-            category: item.category || 'all',
-            badge: item.discount ? `${item.discount} OFF` : 'Trending 🔥',
-            link: '#'
-        }));
+        allProducts = rawData.map(item => {
+            const productTitle = item.name ? (item.brand ? `${item.brand} - ${item.name}` : item.name) : (item.brand || 'Cute Product');
+            return {
+                title: productTitle,
+                price: `₹${item.sellPrice || item.mrp || 299}`,
+                image: (item.image && item.image.startsWith('http') && item.image !== "https://via.placeholder.com/200") 
+                        ? item.image 
+                        : 'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=500',
+                category: item.category || 'all',
+                badge: item.discount ? `${item.discount}` : 'Trending 🔥',
+                link: '#'
+            };
+        });
 
         displayProducts(allProducts.slice(0, 60));
     } catch (error) {
@@ -251,7 +254,7 @@ async function handleLogin(e) {
         document.getElementById('authNav').innerHTML = `<span style="font-size:12px; font-weight:bold; color:#ff1493;">Hi, ${userSnap.val().fullName} 💕</span>`;
         showToast("Login successful cutie! 💕");
         fetchProducts();
-    } catch (err) { showError(document.getElementById('regError'), err.message); }
+    } catch (err) { showError(document.getElementById('loginError'), err.message); }
 }
 
 function showError(el, msg) { 
